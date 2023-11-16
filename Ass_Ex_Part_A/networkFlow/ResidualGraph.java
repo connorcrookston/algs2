@@ -53,36 +53,44 @@ public class ResidualGraph extends Network {
     public LinkedList<Edge> findAugmentingPath() {
         // complete this method as part of Task 2
         LinkedList<Edge> path = new LinkedList<>();
-        boolean[] visited = new boolean[this.numVertices];
+        boolean[] visited = new boolean[numVertices];
         Queue<Vertex> queue = new LinkedList<>();
-        Map<Vertex, Edge> prevEdge = new HashMap<>();
 
-        Vertex source = this.getVertexByIndex(0);
-        Vertex sink = this.getVertexByIndex(this.numVertices - 1);
+
+        Vertex source = getVertexByIndex(0);
+        Vertex sink = getVertexByIndex(numVertices - 1);
+
+        System.out.println("sink: " + sink + "\n");
+
         queue.add(source);
         visited[source.getLabel()] = true;
 
+        Map<Vertex, Edge> parent = new HashMap<>();
+
         while (!queue.isEmpty()) {
             Vertex u = queue.poll();
-            if (u.equals(sink)) {
-                // sink found, build path
-                while (u != source) {
-                    Edge edge = prevEdge.get(u);
-                    path.addFirst(edge);
-                    u = edge.getSourceVertex();
-                }
-                return path;
-            }
-
-            for (Vertex v : this.getAdjList(u)) {
-                Edge edge = this.getAdjMatrixEntry(u, v);
-                if (!visited[v.getLabel()] && edge.getCap() > 0) {
+            for (Vertex v : getAdjList(u)) {
+                Edge edge = getAdjMatrixEntry(u, v);
+                if (!visited[v.getLabel()] && edge != null && edge.getCap() > edge.getFlow()) {
+                    parent.put(v, edge);
                     visited[v.getLabel()] = true;
-                    prevEdge.put(v, edge);
                     queue.add(v);
+
+                    System.out.println(v);
+
+                    if (v.equals(getVertexByIndex(numVertices - 1))) {
+                        System.out.println();
+                        Vertex current = v;
+                        while (current != source) {
+                            Edge e = parent.get(current);
+                            path.addFirst(e);
+                            current = e.getSourceVertex();
+                        }
+                        return path;
+                    }
                 }
             }
         }
-        return path;
+        return new LinkedList<>();
     }
 }
