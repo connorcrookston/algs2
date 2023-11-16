@@ -18,6 +18,27 @@ public class ResidualGraph extends Network {
     public ResidualGraph(Network net) {
         super(net.numVertices);
         // complete this constructor as part of Task 2
+
+        int n = getNumVertices();
+
+        // iterate over all vertices in network
+        for (int u = 0; u < n; u++) {
+            // iterate over all adjacent vertices
+            for (Vertex v : net.getAdjList((net.getVertexByIndex(u)))) {
+                Edge edge = net.getAdjMatrixEntry(net.getVertexByIndex(u), v);
+                int resCap = edge.getCap() - edge.getFlow();
+
+                // add forward edge if resCap > 0
+                if (resCap > 0) {
+                    this.addEdge(net.getVertexByIndex(u), v, resCap);
+                }
+
+                // add reverse edge if flow > 0
+                if (edge.getFlow() > 0) {
+                    this.addEdge(v, net.getVertexByIndex(u), edge.getFlow());
+                }
+            }
+        }
     }
 
     /**
@@ -31,6 +52,37 @@ public class ResidualGraph extends Network {
      */
     public LinkedList<Edge> findAugmentingPath() {
         // complete this method as part of Task 2
-        return null;
+        LinkedList<Edge> path = new LinkedList<>();
+        boolean[] visited = new boolean[this.numVertices];
+        Queue<Vertex> queue = new LinkedList<>();
+        Map<Vertex, Edge> prevEdge = new HashMap<>();
+
+        Vertex source = this.getVertexByIndex(0);
+        Vertex sink = this.getVertexByIndex(this.numVertices - 1);
+        queue.add(source);
+        visited[source.getLabel()] = true;
+
+        while (!queue.isEmpty()) {
+            Vertex u = queue.poll();
+            if (u.equals(sink)) {
+                // sink found, build path
+                while (u != source) {
+                    Edge edge = prevEdge.get(u);
+                    path.addFirst(edge);
+                    u = edge.getSourceVertex();
+                }
+                return path;
+            }
+
+            for (Vertex v : this.getAdjList(u)) {
+                Edge edge = this.getAdjMatrixEntry(u, v);
+                if (!visited[v.getLabel()] && edge.getCap() > 0) {
+                    visited[v.getLabel()] = true;
+                    prevEdge.put(v, edge);
+                    queue.add(v);
+                }
+            }
+        }
+        return path;
     }
 }

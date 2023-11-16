@@ -1,3 +1,5 @@
+import networkFlow.Edge;
+import networkFlow.ResidualGraph;
 import networkFlow.Vertex;
 import networkFlow.Network;
 import java.util.*;
@@ -88,6 +90,17 @@ public class FordFulk {
      */
     public void fordFulkerson() {
         // complete this method as part of Task 2
+        ResidualGraph residualGraph = new ResidualGraph(net);
+        LinkedList<Edge> path = residualGraph.findAugmentingPath();
+
+        while (path != null && !path.isEmpty()) {
+            residualGraph.augmentPath(path);
+
+            residualGraph = new ResidualGraph(net);
+
+            path = residualGraph.findAugmentingPath();
+        }
+
     }
 
     /**

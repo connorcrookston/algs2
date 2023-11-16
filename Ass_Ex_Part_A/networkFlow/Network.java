@@ -112,6 +112,29 @@ public class Network extends DirectedGraph {
      */
     public void augmentPath(List<Edge> path) {
         // complete this method as part of Task 2
+        // find min residual capacity value along the path
+        int minResidualCap = Integer.MAX_VALUE;
+
+        for (Edge edge : path) {
+            minResidualCap = Math.min(minResidualCap, edge.getCap());
+        }
+
+        // augment the flow along the path
+        for (Edge edge : path) {
+            // increase flow in forward direction
+            Vertex u = edge.getSourceVertex();
+            Vertex v = edge.getTargetVertex();
+            Edge forwardEdge = this.getAdjMatrixEntry(u, v);
+            if (forwardEdge != null) {
+                System.out.println(minResidualCap);
+                forwardEdge.setFlow(forwardEdge.getFlow() + minResidualCap);
+            }
+            // decrease flow in reverse if reverse edge exists
+            Edge reverseEdge = this.getAdjMatrixEntry(v, u);
+            if (reverseEdge != null) {
+                reverseEdge.setFlow(reverseEdge.getFlow() - minResidualCap);
+            }
+        }
     }
 
     /**
@@ -122,24 +145,17 @@ public class Network extends DirectedGraph {
      */
     public boolean isFlow() {
         // complete this method as part of Task 1
-        int n = getNumVertices()-1;
-        Vertex s = getSink();
-        Vertex t = getSource();
+        int n = getNumVertices();
 
-        System.out.println(s);
-        System.out.println(t+"\n");
-
-        // for each vertex, check if it has an adjacent vertex
-        // if it does they make an edge, get the flow of the edge
-        // and if edge flow <= edge capacity
-
-        for (int idx=0; idx<=n; idx++){
-            Vertex vv = getVertexByIndex(idx);
-            if (vv != s && vv != t) {
-                LinkedList adj = getAdjList(vv));
-                Edge e = new Edge(vv, adj.toArray()[0])
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                Edge edge = getAdjMatrixEntry(getVertexByIndex(i), getVertexByIndex(j));
+                if (edge != null && edge.getFlow() > edge.getCap()) {
+                    return false;   // flow exceeds capacity
+                }
             }
         }
+
         return true;
     }
 
@@ -150,7 +166,35 @@ public class Network extends DirectedGraph {
      */
     public int getValue() {
         // complete this method as part of Task
-        return 0;
+        Vertex source = getVertexByIndex(0);
+        Vertex sink = getVertexByIndex(getNumVertices()-1);
+
+        boolean[] visited = new boolean[getNumVertices()];
+        int maxFlow = dfs(source, sink, visited, 0);
+
+        return maxFlow;
+    }
+
+    private int dfs(Vertex current, Vertex sink, boolean[] visited, int maxFlow) {
+
+        // set the current vertex's visited value to true
+        visited[current.getLabel()] = true;
+
+        for (Vertex v : getAdjList(current)) {
+           if (!visited[v.getLabel()]) {
+               Edge edge = getAdjMatrixEntry(current, v);
+               if (edge != null) {
+                   int edgeFlow = edge.getFlow();
+//                   System.out.println(edge.getCap());
+//                   System.out.println(edge.getFlow());
+                   maxFlow += edgeFlow + dfs(v, sink, visited, maxFlow);
+               }
+           }
+        }
+
+        // reset current visited to false for backtracking
+        visited[current.getLabel()] = false;
+        return maxFlow;
     }
 
     /**
@@ -161,5 +205,18 @@ public class Network extends DirectedGraph {
      */
     public void printFlow() {
         // complete this method as part of Task 1
+        int n = getNumVertices();
+
+        // iterate over all vertices in network
+        for (int u = 0; u < n; u++) {
+            // iterate over all target vertices in network
+            for (int v = 0; v < n; v++) {
+                Edge edge = getAdjMatrixEntry(getVertexByIndex(u), getVertexByIndex(v));
+                // check if there is an edge, print details
+                if (edge != null) {
+                    System.out.println("(" + u + "," + v + ") " + edge.getCap() + "/" + edge.getFlow());
+                }
+            }
+        }
     }
 }
