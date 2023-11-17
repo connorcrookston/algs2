@@ -166,36 +166,17 @@ public class Network extends DirectedGraph {
      * @return the value of the flow
      */
     public int getValue() {
-        // complete this method as part of Task
-        Vertex source = getVertexByIndex(0);
-        Vertex sink = getVertexByIndex(getNumVertices()-1);
+        int totalFlow = 0;
 
-        boolean[] visited = new boolean[getNumVertices()];
-        int maxFlow = dfs(source, sink, visited, 0);
-
-        return maxFlow;
-    }
-
-    private int dfs(Vertex current, Vertex sink, boolean[] visited, int maxFlow) {
-
-        // set the current vertex's visited value to true
-        visited[current.getLabel()] = true;
-
-        for (Vertex v : getAdjList(current)) {
-           if (!visited[v.getLabel()]) {
-               Edge edge = getAdjMatrixEntry(current, v);
-               if (edge != null) {
-                   int edgeFlow = edge.getFlow();
-//                   System.out.println(edge.getCap());
-//                   System.out.println(edge.getFlow());
-                   maxFlow += edgeFlow + dfs(v, sink, visited, maxFlow);
-               }
-           }
+        // Iterate over each edge coming out of the source
+        for (Vertex v : getAdjList(getSource())) {
+            Edge edge = getAdjMatrixEntry(getSource(), v);
+            if (edge != null) {
+                totalFlow += edge.getFlow();
+            }
         }
 
-        // reset current visited to false for backtracking
-        visited[current.getLabel()] = false;
-        return maxFlow;
+        return totalFlow;
     }
 
     /**

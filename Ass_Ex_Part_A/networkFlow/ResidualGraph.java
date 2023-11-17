@@ -95,10 +95,10 @@ public class ResidualGraph extends Network {
             }
             for (Vertex v : getAdjList(u)) {
                 Edge edge = getAdjMatrixEntry(u, v);
-                System.out.println("Checking edge from " + u.getLabel() + " to " + v.getLabel());
-                System.out.println("Edge cap: " + edge.getCap());
+//                System.out.println("Checking edge from " + u.getLabel() + " to " + v.getLabel());
+//                System.out.println("Edge cap: " + edge.getCap());
                 if (!visited[v.getLabel()] && edge != null && edge.getCap() > 0) {
-                    System.out.println("Adding edge to path: " + u.getLabel() + " -> " + v.getLabel());
+//                    System.out.println("Adding edge to path: " + u.getLabel() + " -> " + v.getLabel());
                     parent.put(v, edge);
                     if (!queue.contains(v)) {
                         queue.add(v);
