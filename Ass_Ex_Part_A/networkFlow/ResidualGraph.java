@@ -57,52 +57,37 @@ public class ResidualGraph extends Network {
      * @return the linked list
      */
     public LinkedList<Edge> findAugmentingPath() {
-        // complete this method as part of Task 2
         LinkedList<Edge> path = new LinkedList<>();
         boolean[] visited = new boolean[numVertices];
-        Queue<Vertex> queue = new LinkedList<>();
+        Queue<Vertex> queue = new ArrayDeque<>();
         Map<Vertex, Edge> parent = new HashMap<>();
 
-
         Vertex source = getVertexByIndex(0);
-        Vertex sink = getVertexByIndex(numVertices-1);
-
-//        System.out.println("source: " + source);
-//
-//        System.out.println("sink: " + sink + "\n");
+        Vertex sink = getVertexByIndex(numVertices - 1);
 
         queue.add(source);
         visited[source.getLabel()] = true;
 
         while (!queue.isEmpty()) {
-//            System.out.println(queue);
             Vertex u = queue.poll();
-            visited[u.getLabel()] = true;
-//            System.out.println("visited " + u.getLabel() + " " + visited[u.getLabel()]);
-//            System.out.println("Visiting: " + u.getLabel());
+
             if (u.equals(sink)) {
-                Vertex current = u;
-                while (current != source) {
+                for (Vertex current = sink; current != source; current = parent.get(current).getSourceVertex()) {
                     Edge e = parent.get(current);
                     if (e == null) {
-                        System.out.println("Missing edge in path for vertex: " + current.getLabel()); // Debugging
                         return new LinkedList<>(); // Early exit if path is incomplete
                     }
                     path.addFirst(e);
-                    current = e.getSourceVertex();
                 }
                 return path;
             }
+
             for (Vertex v : getAdjList(u)) {
                 Edge edge = getAdjMatrixEntry(u, v);
-//                System.out.println("Checking edge from " + u.getLabel() + " to " + v.getLabel());
-//                System.out.println("Edge cap: " + edge.getCap());
                 if (!visited[v.getLabel()] && edge != null && edge.getCap() > 0) {
-//                    System.out.println("Adding edge to path: " + u.getLabel() + " -> " + v.getLabel());
                     parent.put(v, edge);
-                    if (!queue.contains(v)) {
-                        queue.add(v);
-                    }
+                    queue.add(v);
+                    visited[v.getLabel()] = true;
                 }
             }
         }
