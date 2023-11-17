@@ -1,5 +1,7 @@
 package networkFlow;
 
+import javax.swing.plaf.synth.SynthTextAreaUI;
+import java.awt.desktop.SystemEventListener;
 import java.util.*;
 
 /**
@@ -19,10 +21,12 @@ public class ResidualGraph extends Network {
         super(net.numVertices);
         // complete this constructor as part of Task 2
 
-        int n = getNumVertices();
+        for (int i = 0; i < net.numVertices; i++) {
+            this.vertices[i] = net.getVertexByIndex(i);
+        }
 
         // iterate over all vertices in network
-        for (int u = 0; u < n; u++) {
+        for (int u = 0; u < net.numVertices; u++) {
             // iterate over all adjacent vertices
             for (Vertex v : net.getAdjList((net.getVertexByIndex(u)))) {
                 Edge edge = net.getAdjMatrixEntry(net.getVertexByIndex(u), v);
@@ -31,11 +35,13 @@ public class ResidualGraph extends Network {
                 // add forward edge if resCap > 0
                 if (resCap > 0) {
                     this.addEdge(net.getVertexByIndex(u), v, resCap);
+//                    System.out.println("Adding forward edge: " + net.getVertexByIndex(u) + " - > " + v + " resCap= " + resCap);
                 }
 
                 // add reverse edge if flow > 0
                 if (edge.getFlow() > 0) {
                     this.addEdge(v, net.getVertexByIndex(u), edge.getFlow());
+//                    System.out.println("Adding reverse edge: " + v + " - > " + net.getVertexByIndex(u) + " resCap= " + edge.getFlow());
                 }
             }
         }
@@ -55,38 +61,47 @@ public class ResidualGraph extends Network {
         LinkedList<Edge> path = new LinkedList<>();
         boolean[] visited = new boolean[numVertices];
         Queue<Vertex> queue = new LinkedList<>();
+        Map<Vertex, Edge> parent = new HashMap<>();
 
 
         Vertex source = getVertexByIndex(0);
-        Vertex sink = getVertexByIndex(numVertices - 1);
+        Vertex sink = getVertexByIndex(numVertices-1);
 
-        System.out.println("sink: " + sink + "\n");
+//        System.out.println("source: " + source);
+//
+//        System.out.println("sink: " + sink + "\n");
 
         queue.add(source);
         visited[source.getLabel()] = true;
 
-        Map<Vertex, Edge> parent = new HashMap<>();
-
         while (!queue.isEmpty()) {
+//            System.out.println(queue);
             Vertex u = queue.poll();
+            visited[u.getLabel()] = true;
+//            System.out.println("visited " + u.getLabel() + " " + visited[u.getLabel()]);
+//            System.out.println("Visiting: " + u.getLabel());
+            if (u.equals(sink)) {
+                Vertex current = u;
+                while (current != source) {
+                    Edge e = parent.get(current);
+                    if (e == null) {
+                        System.out.println("Missing edge in path for vertex: " + current.getLabel()); // Debugging
+                        return new LinkedList<>(); // Early exit if path is incomplete
+                    }
+                    path.addFirst(e);
+                    current = e.getSourceVertex();
+                }
+                return path;
+            }
             for (Vertex v : getAdjList(u)) {
                 Edge edge = getAdjMatrixEntry(u, v);
-                if (!visited[v.getLabel()] && edge != null && edge.getCap() > edge.getFlow()) {
+                System.out.println("Checking edge from " + u.getLabel() + " to " + v.getLabel());
+                System.out.println("Edge cap: " + edge.getCap());
+                if (!visited[v.getLabel()] && edge != null && edge.getCap() > 0) {
+                    System.out.println("Adding edge to path: " + u.getLabel() + " -> " + v.getLabel());
                     parent.put(v, edge);
-                    visited[v.getLabel()] = true;
-                    queue.add(v);
-
-                    System.out.println(v);
-
-                    if (v.equals(getVertexByIndex(numVertices - 1))) {
-                        System.out.println();
-                        Vertex current = v;
-                        while (current != source) {
-                            Edge e = parent.get(current);
-                            path.addFirst(e);
-                            current = e.getSourceVertex();
-                        }
-                        return path;
+                    if (!queue.contains(v)) {
+                        queue.add(v);
                     }
                 }
             }

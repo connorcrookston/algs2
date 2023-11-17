@@ -97,13 +97,12 @@ public class FordFulk {
 
 
         while (path != null && !path.isEmpty()) {
+            System.out.println(path);
+
             residualGraph.augmentPath(path);
-
             residualGraph = new ResidualGraph(net);
-
             path = residualGraph.findAugmentingPath();
         }
-
     }
 
     /**

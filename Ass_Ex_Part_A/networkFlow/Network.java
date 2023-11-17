@@ -91,6 +91,8 @@ public class Network extends DirectedGraph {
      */
     public void setFlow(Vertex sourceEndpoint, Vertex targetEndpoint, int flow) {
         adjMatrix[sourceEndpoint.getLabel()][targetEndpoint.getLabel()].setFlow(flow);
+//        Edge e = getAdjMatrixEntry(sourceEndpoint, targetEndpoint);
+//        System.out.println(e.getFlow());
     }
 
     /**
@@ -111,28 +113,27 @@ public class Network extends DirectedGraph {
      * @param path a list of edges along which the flow should be augmented
      */
     public void augmentPath(List<Edge> path) {
-        // complete this method as part of Task 2
         // find min residual capacity value along the path
         int minResidualCap = Integer.MAX_VALUE;
-
         for (Edge edge : path) {
-            minResidualCap = Math.min(minResidualCap, edge.getCap());
+            minResidualCap = Math.min(minResidualCap, edge.getCap() - edge.getFlow());
         }
 
         // augment the flow along the path
         for (Edge edge : path) {
-            // increase flow in forward direction
             Vertex u = edge.getSourceVertex();
             Vertex v = edge.getTargetVertex();
             Edge forwardEdge = this.getAdjMatrixEntry(u, v);
+
             if (forwardEdge != null) {
-                System.out.println(minResidualCap);
-                forwardEdge.setFlow(forwardEdge.getFlow() + minResidualCap);
-            }
-            // decrease flow in reverse if reverse edge exists
-            Edge reverseEdge = this.getAdjMatrixEntry(v, u);
-            if (reverseEdge != null) {
-                reverseEdge.setFlow(reverseEdge.getFlow() - minResidualCap);
+                // increase flow in forward direction
+                setFlow(u, v, forwardEdge.getFlow() + minResidualCap);
+            } else {
+                // decrease flow in reverse if reverse edge exists
+                Edge reverseEdge = this.getAdjMatrixEntry(v, u);
+                if (reverseEdge != null) {
+                    setFlow(v, u, reverseEdge.getFlow() - minResidualCap);
+                }
             }
         }
     }
